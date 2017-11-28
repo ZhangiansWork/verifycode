@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="verificode:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="create.war">
+      <element id="artifact" artifact-name="verificode:war exploded" />
+    </root>
+  </artifact>
+</component>
