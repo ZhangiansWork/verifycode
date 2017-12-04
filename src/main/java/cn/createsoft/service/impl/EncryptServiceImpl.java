@@ -38,12 +38,12 @@ public class EncryptServiceImpl implements EncryptService {
         UserKey tempUserKey = new UserKey();
         String userRanId1 = cryptoService.randomNum();
 //        String userRanId2 = cryptoService.randomNum();
-        tempUserKey.setKeyId(userRanId1);
+        tempUserKey.setKeyId(Integer.valueOf(userRanId1));
         tempUserKey.setPhoneNum(phoneNum);
         UserKey userKey1 = userKeyService.selectKey(tempUserKey);
 //        tempUserKey.setKeyId(userRanId2);
 //        UserKey userKey2 = userKeyService.selectKey(tempUserKey);
-        tempUserKey.setKeyId("0");
+        tempUserKey.setKeyId(0);
         UserKey userIdentityKey = userKeyService.selectKey(tempUserKey);
 
         //2. server private keys
@@ -67,12 +67,12 @@ public class EncryptServiceImpl implements EncryptService {
         String[] secondRoundKeys = cryptoService.axolotlProtocol(DatatypeConverter.printBase64Binary(kShared),firstRoundKeys[0],"WhisperRatchet");
 
         //7. Third Round Axolotl Protocol
-        String input = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseHexBinary("00000001"),secondRoundKeys[1]));
+        String input = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary("00000001"),secondRoundKeys[1]));
         String[] thirdRoundKeys = cryptoService.axolotlProtocol(input,"00000000","WhisperMessageKeys");
 
         //8. Generate encryption Key and Mac key
         String symatricKey = thirdRoundKeys[0];
-        String MacKey = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseHexBinary("00000002"),thirdRoundKeys[1]));
+        String MacKey = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary("00000002"),thirdRoundKeys[1]));
 
         //9. encrypt code
         byte[] IV = cryptoService.generateNonce();
@@ -83,7 +83,7 @@ public class EncryptServiceImpl implements EncryptService {
         String ctr = DatatypeConverter.printBase64Binary(IV);
         String version = "2";
         String X = version+"|"+serverKey2.getPublicKey()+"|"+ctr+"|"+codeCipher;
-        String tag = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseHexBinary(X), MacKey));
+        String tag = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary(X), MacKey));
 
         //11. generate envelope key
         byte[] envelopeKey = cryptoService.ECDHKeyAgreement(serverIdentityKey.getPrivateKey(),userIdentityKey.getPublicKey());
@@ -95,7 +95,7 @@ public class EncryptServiceImpl implements EncryptService {
         String finalCipher = cryptoService.aesCBC(data,DatatypeConverter.printBase64Binary(envelopeKey),DatatypeConverter.printBase64Binary(IV));
 
         //14. sign data
-        String finalMac = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseHexBinary(finalCipher),DatatypeConverter.printBase64Binary(envelopeKey)));
+        String finalMac = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary(finalCipher),DatatypeConverter.printBase64Binary(envelopeKey)));
 
         //15. result
         String result = finalCipher+"|"+finalMac+"|"+DatatypeConverter.printBase64Binary(IV);
@@ -114,7 +114,7 @@ public class EncryptServiceImpl implements EncryptService {
         byte[] envolopeKey = cryptoService.ECDHKeyAgreement(selfIndentityPrivateKey,serverIdentityPublicKey);
 
         //2. verify Mac
-        String tempMac = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseHexBinary(finalCipher),DatatypeConverter.printBase64Binary(envolopeKey)));
+        String tempMac = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary(finalCipher),DatatypeConverter.printBase64Binary(envolopeKey)));
         if (!finalCipher.equals(tempMac)){
             return "verify finalMac err";
         }
@@ -149,14 +149,14 @@ public class EncryptServiceImpl implements EncryptService {
         String[] secondRoundKeys = cryptoService.axolotlProtocol(DatatypeConverter.printBase64Binary(kShared),firstRoundKeys[0],"WhisperRatchet");
 
         //9. generate input
-        String input = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseHexBinary("00000001"),secondRoundKeys[1]));
+        String input = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary("00000001"),secondRoundKeys[1]));
 
         //10. Third round axolotl protocol
         String[] thirdRoundKeys = cryptoService.axolotlProtocol(input,"00000000","WhisperMessageKeys");
 
         // 11. generate Mac Key and encrypt key
         String symatricKey = thirdRoundKeys[0];
-        String MacKey = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseHexBinary("00000002"),thirdRoundKeys[1]));
+        String MacKey = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary("00000002"),thirdRoundKeys[1]));
 
         //12. verify Mac of X
         String X = version+"|"+serverPublicKey2+"|"+ctr+"|"+codeCipher;

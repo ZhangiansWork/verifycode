@@ -3,6 +3,7 @@ package cn.createsoft.Map;
 import cn.createsoft.map.UserMapper;
 import cn.createsoft.model.User;
 import cn.createsoft.service.CryptoService;
+import cn.createsoft.util.saltlib.Box;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -41,4 +42,6 @@ public class MapperTest {
             System.out.println(arr[i]);
         }
     }
+
+
 }

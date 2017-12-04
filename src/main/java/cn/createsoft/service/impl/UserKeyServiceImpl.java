@@ -13,19 +13,19 @@ public class UserKeyServiceImpl extends BaseService<UserKey> implements UserKeyS
     @Autowired
     private UserKeyMapper userKeyMapper;
 
-    @Override
-    public boolean instertKeys(UserKey uk) {
-        if (!StringUtil.isNotNullorEmpty(uk.getPhoneNum())
-                &&!StringUtil.isNotNullorEmpty(uk.getPublicKey())
-                &&StringUtil.isNotNullorEmpty(uk.getKeyId())){
-            return false;
-        }
-        int count = userKeyMapper.insert(uk);
-        if (count !=0){
-            return true;
-        }
-        return false;
-    }
+//    @Override
+//    public boolean instertKeys(UserKey uk) {
+//        if (!StringUtil.isNotNullorEmpty(uk.getPhoneNum())
+//                &&!StringUtil.isNotNullorEmpty(uk.getPublicKey())
+//                &&StringUtil.isNotNullorEmpty(uk.getKeyId())){
+//            return false;
+//        }
+//        int count = userKeyMapper.insert(uk);
+//        if (count !=0){
+//            return true;
+//        }
+//        return false;
+//    }
 
     @Override
     public UserKey selectKey(UserKey uk) {

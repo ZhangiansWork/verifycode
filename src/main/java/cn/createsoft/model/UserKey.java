@@ -7,13 +7,13 @@ public class UserKey {
 
     private String publicKey;
 
-    private String keyId;
+    private Integer keyId;
 
-    public String getKeyId() {
+    public Integer getKeyId() {
         return keyId;
     }
 
-    public void setKeyId(String keyId) {
+    public void setKeyId(Integer keyId) {
         this.keyId = keyId;
     }
 

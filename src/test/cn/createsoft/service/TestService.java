@@ -1,6 +1,11 @@
 package cn.createsoft.service;
 
 
+import cn.createsoft.map.ServerKeyMapper;
+import cn.createsoft.map.UserKeyMapper;
+import cn.createsoft.model.ServerKey;
+import cn.createsoft.model.UserKey;
+import cn.createsoft.util.saltlib.Box;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -22,7 +27,11 @@ public class TestService {
     @Resource
     private CryptoService cryptoService;
 
+    @Resource
+    private ServerKeyMapper skMapper;
 
+    @Resource
+    private UserKeyMapper ukMapper;
     @Test
     public void RandomNum(){
         java.lang.String r = cryptoService.randomNum();
@@ -33,5 +42,28 @@ public class TestService {
     public void SecureRandom() throws UnsupportedEncodingException {
         String slat = DatatypeConverter.printBase64Binary(cryptoService.generateNonce());
         System.out.println(slat);
+    }
+
+    @Test
+    public void GenerateKeyPairs(){
+        for (int i = 0 ; i <50; i++) {
+            Box.KeyPair keys = cryptoService.generateKeyPair();
+            ServerKey sk = new ServerKey();
+            sk.setPublicKey(DatatypeConverter.printBase64Binary(keys.pubKey));
+            sk.setPrivateKey(DatatypeConverter.printBase64Binary(keys.privKey));
+            skMapper.insert(sk);
+        }
+    }
+
+    @Test
+    public void generateUserKeys(){
+        for (int i = 0; i <50 ; i++){
+            Box.KeyPair keys = cryptoService.generateKeyPair();
+            UserKey uk = new UserKey();
+            uk.setKeyId(i);
+            uk.setPhoneNum("120");
+            uk.setPublicKey(DatatypeConverter.printBase64Binary(keys.pubKey));
+            ukMapper.insert(uk);
+        }
     }
 }
