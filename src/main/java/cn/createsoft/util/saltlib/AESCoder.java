@@ -45,7 +45,7 @@ public class AESCoder {
         }
         //初始化此密钥生成器，使其具有确定的密钥大小
         //AES 要求密钥长度为 128
-        kg.init(128);
+        kg.init(256);
         //生成一个密钥
         SecretKey  secretKey = kg.generateKey();
         return secretKey.getEncoded();
@@ -209,7 +209,7 @@ public class AESCoder {
 
         Key k = toKey(key);
 
-        String data ="AES数据";
+        String data ="123456";
         System.out.println("加密前数据: string:"+data);
         System.out.println("加密前数据: byte[]:"+showByteArray(data.getBytes()));
         System.out.println();

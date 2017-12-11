@@ -8,6 +8,7 @@ import cn.createsoft.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -22,21 +23,31 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
 
     @Override
     public int saveUser(String phoneNum, String password, Map<Integer, String> keys) {
-
         User tempUser = new User();
         tempUser.setPhoneNum(phoneNum);
-        tempUser.setPassword(password);
-        User isExist =uMapper.selectOne(tempUser);
-        if (isExist!=null){
+//        List<User> isExist =uMapper.select(tempUser);
+        List<User> isExist = uMapper.selectByPhoneNum(phoneNum);
+        System.out.println(isExist.size());
+        if (isExist.size()!=0){
             return -2 ;// already exist
         }
-
+        tempUser.setPassword(password);
         int uRes = uMapper.insert(tempUser);
         if (uRes == 0){
             return 0; // save user err
         }
 
-
+//        for(Object key : keys.keySet()) {
+//            String value = (String) keys.get(key);
+//            UserKey tempUserKey  = new UserKey();
+//            tempUserKey.setKeyId(Integer.parseInt(String.valueOf(key)));
+//            tempUserKey.setPhoneNum(phoneNum);
+//            tempUserKey.setPublicKey(value);
+//            int ukRes = ukMapper.insert(tempUserKey);
+//            if (ukRes ==0){
+//                return -1; // save key err
+//            }
+//        }
         for(int i=0; i < keys.size();i++){
             UserKey tempUserKey = new UserKey();
             tempUserKey.setKeyId(i);

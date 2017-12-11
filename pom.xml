@@ -201,6 +201,13 @@
       <artifactId>jpush-client</artifactId>
       <version>3.3.3</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/com.alibaba/fastjson -->
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+      <version>1.2.7</version>
+    </dependency>
+
     <!--分页插件-->
     <dependency>
       <groupId>com.github.pagehelper</groupId>

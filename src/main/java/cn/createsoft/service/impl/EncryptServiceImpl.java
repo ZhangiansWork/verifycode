@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.DatatypeConverter;
+import java.security.Key;
 import java.security.SecureRandom;
 
 
@@ -30,7 +31,7 @@ public class EncryptServiceImpl implements EncryptService {
 
     @Override
     public String encrypt(String phoneNum, String code) throws Exception {
-
+        System.out.println(code);
         //1. user public keys
         // default first key is identityKey
         // Key1 used in triple Diffie-Hellman
@@ -54,18 +55,17 @@ public class EncryptServiceImpl implements EncryptService {
         ServerKey serverKey2 = serverKeyService.randomChoose();
         ServerKey serverIdentityKey = serverKeyService.select(1);
 
+
         //3. tripleDiffie-Hellman
         String secret = cryptoService.generateSecret(userKey1.getPublicKey(), userIdentityKey.getPublicKey(), serverKey1.getPrivateKey(), serverIdentityKey.getPrivateKey());
-
+        System.out.println(secret);
         //4. ECDH new shared
         byte[] kShared = cryptoService.ECDHKeyAgreement(serverKey2.getPrivateKey(), userKey1.getPublicKey());
 
         //5. First Round Axolotl Protocol
         String[] firstRoundKeys = cryptoService.axolotlProtocol(secret,"0000000","WhisperRatchet");
-
-        //6. Second Round Axolotl Protocol
+        //6. Second Round Axolotl Protocolo
         String[] secondRoundKeys = cryptoService.axolotlProtocol(DatatypeConverter.printBase64Binary(kShared),firstRoundKeys[0],"WhisperRatchet");
-
         //7. Third Round Axolotl Protocol
         String input = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary("00000001"),secondRoundKeys[1]));
         String[] thirdRoundKeys = cryptoService.axolotlProtocol(input,"00000000","WhisperMessageKeys");
@@ -73,32 +73,31 @@ public class EncryptServiceImpl implements EncryptService {
         //8. Generate encryption Key and Mac key
         String symatricKey = thirdRoundKeys[0];
         String MacKey = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary("00000002"),thirdRoundKeys[1]));
-
         //9. encrypt code
         byte[] IV = cryptoService.generateNonce();
-        String codeCipher = cryptoService.aesCTR(code,symatricKey,DatatypeConverter.printBase64Binary(IV));
+        Key ak = AESCoder.toKey(DatatypeConverter.parseBase64Binary(symatricKey));
+        String codeCipher = DatatypeConverter.printBase64Binary(AESCoder.encrypt(code.getBytes(),ak,"AES/CTR/NoPadding",IV));
+//        String codeCipher = cryptoService.aesCTR(code,symatricKey,DatatypeConverter.printBase64Binary(IV));
 
         //10. generate digest
 
         String ctr = DatatypeConverter.printBase64Binary(IV);
         String version = "2";
         String X = version+"|"+serverKey2.getPublicKey()+"|"+ctr+"|"+codeCipher;
-        String tag = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary(X), MacKey));
-
+        String tag = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(X.getBytes(), MacKey));
         //11. generate envelope key
         byte[] envelopeKey = cryptoService.ECDHKeyAgreement(serverIdentityKey.getPrivateKey(),userIdentityKey.getPublicKey());
-
         //12. encap final data
-        String data = X +"|"+tag +"|"+ userRanId1 +"|"+ serverKey1.getPublicKey()+"|"+serverIdentityKey +"|"+ phoneNum;
-
+        String data = X +"|"+tag +"|"+ userRanId1 +"|"+ serverKey1.getPublicKey()+"|"+serverIdentityKey.getPublicKey() +"|"+ phoneNum;
         //13. encrypt data
         String finalCipher = cryptoService.aesCBC(data,DatatypeConverter.printBase64Binary(envelopeKey),DatatypeConverter.printBase64Binary(IV));
-
+//        System.out.println(finalCipher);
         //14. sign data
         String finalMac = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary(finalCipher),DatatypeConverter.printBase64Binary(envelopeKey)));
-
+//        System.out.println(finalMac);
         //15. result
         String result = finalCipher+"|"+finalMac+"|"+DatatypeConverter.printBase64Binary(IV);
+//        System.out.println(result);
         return result;
     }
 
@@ -109,12 +108,15 @@ public class EncryptServiceImpl implements EncryptService {
         String finalCipher =finalKeyMacIv[0];
         String finalMac = finalKeyMacIv[1];
         String IV = finalKeyMacIv[2];
-
+        System.out.println(finalCipher);
+        System.out.println(finalMac);
+        System.out.println(IV);
         //1. generate envelope key
         byte[] envolopeKey = cryptoService.ECDHKeyAgreement(selfIndentityPrivateKey,serverIdentityPublicKey);
 
         //2. verify Mac
         String tempMac = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary(finalCipher),DatatypeConverter.printBase64Binary(envolopeKey)));
+        System.out.println(tempMac);
         if (!finalCipher.equals(tempMac)){
             return "verify finalMac err";
         }

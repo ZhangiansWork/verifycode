@@ -4,7 +4,7 @@ package cn.createsoft.util;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -664,4 +664,25 @@ public class StringUtil {
         return 0;
     }
 
+    public static Map transStringToMap(String mapString){
+        Map map = new HashMap();
+        java.util.StringTokenizer items;
+        for(StringTokenizer entrys = new StringTokenizer(mapString, ","); entrys.hasMoreTokens();
+            map.put(items.nextToken(), items.hasMoreTokens() ? ((Object) (items.nextToken())) : null))
+            items = new StringTokenizer(entrys.nextToken(), ":");
+        return map;
+    }
+
+
+    public static String transMapToString(Map map){
+        java.util.Map.Entry entry;
+        StringBuffer sb = new StringBuffer();
+        for(Iterator iterator = map.entrySet().iterator(); iterator.hasNext();)
+        {
+            entry = (java.util.Map.Entry)iterator.next();
+            sb.append(entry.getKey().toString()).append( ":" ).append(null==entry.getValue()?"":
+                    entry.getValue().toString()).append (iterator.hasNext() ? "," : "");
+        }
+        return sb.toString();
+    }
 }

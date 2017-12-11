@@ -1,9 +1,7 @@
 package cn.createsoft.Map;
 
-import cn.createsoft.map.UserMapper;
-import cn.createsoft.model.User;
 import cn.createsoft.service.CryptoService;
-import cn.createsoft.util.saltlib.Box;
+import cn.createsoft.util.saltlib.AESCoder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -11,7 +9,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
 import javax.xml.bind.DatatypeConverter;
-import javax.xml.crypto.Data;
+import java.util.Arrays;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 //告诉junit spring配置文件
@@ -43,5 +41,18 @@ public class MapperTest {
         }
     }
 
+    @Test
+    public void change(){
+        String s = "aaa\\|bbb\\|ccc";
+        byte[] ss = DatatypeConverter.parseBase64Binary(s);
+        System.out.println(Arrays.toString(ss));
+        String a = DatatypeConverter.printBase64Binary(ss);
+        System.out.println(a);
+
+    }
+
+    @Test
+    public void enc(){
+    }
 
 }

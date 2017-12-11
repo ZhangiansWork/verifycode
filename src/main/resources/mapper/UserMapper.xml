@@ -12,4 +12,9 @@
         SELECT * FROM user
         WHERE user_id = #{userId}
     </select>
+
+    <select id="selectByPhoneNum" parameterType="String" resultMap="BaseResultMap">
+        SELECT * FROM user
+        WHERE phone_num = #{phoneNum}
+    </select>
 </mapper>

@@ -4,16 +4,25 @@ import cn.createsoft.model.User;
 import cn.createsoft.service.UserKeyService;
 import cn.createsoft.service.UserService;
 import cn.createsoft.util.StringUtil;
+import com.alibaba.druid.support.json.JSONParser;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 @Controller
 @RequestMapping(value = "user")
-public class UserController {
+public class UserController extends BaseController{
 
     @Autowired
     private UserService uService;
@@ -22,10 +31,16 @@ public class UserController {
     private UserKeyService ukService;
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public String register(String phoneNum, String password, Map<Integer,String> keys){
+    @ResponseBody
+    public Object register(String phoneNum, String password, String keys) {
+
         if (StringUtil.isNotNullorEmpty(phoneNum)&&StringUtil.isNotNullorEmpty(password)){
-            int res = uService.saveUser(phoneNum,password,keys);
+            JSONObject key = JSONObject.parseObject(keys);
+            Gson go  = new Gson();
+            Map<Integer,String> keyMap= go.fromJson(keys,new TypeToken<Map<Integer,String>>(){}.getType());
+            int res = uService.saveUser(phoneNum,password,keyMap);
             if (res ==-2){
+
                 return "already exist";
             }
             if (res ==-1){
@@ -35,7 +50,7 @@ public class UserController {
                 return "save user err";
             }
 
-                return "success";
+            return "{\"status\":\"success\"}";
 
         }
         return "param err";

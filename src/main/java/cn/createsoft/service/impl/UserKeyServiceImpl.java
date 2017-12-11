@@ -32,7 +32,7 @@ public class UserKeyServiceImpl extends BaseService<UserKey> implements UserKeyS
         if (!StringUtil.isNotNullorEmpty(uk.getKeyId())&&StringUtil.isNotNullorEmpty(uk.getPhoneNum())){
             return new UserKey();
         }
-        UserKey res = userKeyMapper. selectOne(uk);
+        UserKey res = userKeyMapper.selectOne(uk);
         return res;
     }
 }

@@ -4,6 +4,7 @@ import cn.createsoft.service.CryptoService;
 import cn.createsoft.util.saltlib.AESCoder;
 import cn.createsoft.util.saltlib.Box;
 import cn.createsoft.util.saltlib.Coder;
+import cn.createsoft.util.saltlib.Util;
 import org.springframework.stereotype.Service;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
@@ -36,14 +37,24 @@ public class CryptoServiceImpl implements CryptoService {
         String fisrtKey = DatatypeConverter.printBase64Binary(key1);
         String secondKey = DatatypeConverter.printBase64Binary(key2);
         String thirdKey = DatatypeConverter.printBase64Binary(key3);
-        return fisrtKey+"|"+secondKey+"|"+thirdKey;
+        return fisrtKey+secondKey+thirdKey;
     }
+
+//    public String aaa(String ServerRandomPublicKey, String ServerIdentityPublicKey, String selfRandomPrivateKey, String selfIdentityPrivateKey){
+//        byte[] key1 = ECDHKeyAgreement(selfRandomPrivateKey,ServerIdentityPublicKey);
+//        byte[] key2 = ECDHKeyAgreement(selfIdentityPrivateKey,ServerRandomPublicKey);
+//        byte[] key3 = ECDHKeyAgreement(selfRandomPrivateKey, ServerRandomPublicKey);
+//        String fisrtKey = DatatypeConverter.printBase64Binary(key1);
+//        String secondKey = DatatypeConverter.printBase64Binary(key2);
+//        String thirdKey = DatatypeConverter.printBase64Binary(key3);
+//        return fisrtKey+"|"+secondKey+"|"+thirdKey;
+//    }
 
     @Override
     public String[] axolotlProtocol(String input, String key, String string) throws Exception {
-        byte[] Keypr = Coder.encryptHMAC(DatatypeConverter.parseBase64Binary(input),key);
-        byte[] Key0 = Coder.encryptHMAC(DatatypeConverter.parseBase64Binary(string+"00000000"),DatatypeConverter.printBase64Binary(Keypr));
-        byte[] Key1 = Coder.encryptHMAC(DatatypeConverter.parseBase64Binary(DatatypeConverter.printBase64Binary(Key0)+string+"00000001"),DatatypeConverter.printBase64Binary(Keypr));
+        byte[] Keypr = Coder.encryptHMAC(input.getBytes(),key);
+        byte[] Key0 = Coder.encryptHMAC((string+"00000000").getBytes(),DatatypeConverter.printBase64Binary(Keypr));
+        byte[] Key1 = Coder.encryptHMAC((DatatypeConverter.printBase64Binary(Key0)+string+"00000001").getBytes(),DatatypeConverter.printBase64Binary(Keypr));
         String[] res = new String[2];
         res[0] = DatatypeConverter.printBase64Binary(Key0);
         res[1] = DatatypeConverter.printBase64Binary(Key1);
@@ -70,7 +81,7 @@ public class CryptoServiceImpl implements CryptoService {
     @Override
     public String aesCBC(String data, String key, String IV) throws Exception {
         Key k = new SecretKeySpec(DatatypeConverter.parseBase64Binary(key),"AES");
-        byte[] cipherByte = AESCoder.encrypt(DatatypeConverter.parseBase64Binary(data),k,"AES/CBC/PKCS5Padding",DatatypeConverter.parseBase64Binary(IV));
+        byte[] cipherByte = AESCoder.encrypt(data.getBytes(),k,"AES/CBC/PKCS5Padding",DatatypeConverter.parseBase64Binary(IV));
         String cipher = DatatypeConverter.printBase64Binary(cipherByte);
         return cipher;
 
