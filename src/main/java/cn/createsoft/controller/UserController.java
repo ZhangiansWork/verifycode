@@ -32,13 +32,13 @@ public class UserController extends BaseController{
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
-    public Object register(String phoneNum, String password, String keys) {
-
+    public Object register(String phoneNum, String password, String keys,String token) {
+        System.out.println("toekn"+token);
         if (StringUtil.isNotNullorEmpty(phoneNum)&&StringUtil.isNotNullorEmpty(password)){
             JSONObject key = JSONObject.parseObject(keys);
             Gson go  = new Gson();
             Map<Integer,String> keyMap= go.fromJson(keys,new TypeToken<Map<Integer,String>>(){}.getType());
-            int res = uService.saveUser(phoneNum,password,keyMap);
+            int res = uService.saveUser(phoneNum,password,keyMap, token);
             if (res ==-2){
 
                 return "already exist";
@@ -57,10 +57,12 @@ public class UserController extends BaseController{
     }
 
     @RequestMapping(value = "/login",method = RequestMethod.GET)
-    public String login(String phoneNum,String password){
+    public String login(String phoneNum,String password, String token){
         if (StringUtil.isNotNullorEmpty(phoneNum)&&StringUtil.isNotNullorEmpty(password)){
             User u =uService.selectUser(phoneNum,password);
             if (u !=null){
+                u.setToken(token);
+                uService.updateToken(u);
                 return "success";
             }
             return "no user";

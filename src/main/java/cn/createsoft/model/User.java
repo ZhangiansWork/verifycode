@@ -6,6 +6,17 @@ public class User {
 
    private String phoneNum;
    private String password;
+
+   private String token;
+
+   public String getToken() {
+      return token;
+   }
+
+   public void setToken(String token) {
+      this.token = token;
+   }
+
    public String getPhoneNum() {
       return phoneNum;
    }

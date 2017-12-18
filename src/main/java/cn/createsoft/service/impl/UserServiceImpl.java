@@ -22,7 +22,7 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
     private UserKeyMapper ukMapper;
 
     @Override
-    public int saveUser(String phoneNum, String password, Map<Integer, String> keys) {
+    public int saveUser(String phoneNum, String password, Map<Integer, String> keys, String token) {
         User tempUser = new User();
         tempUser.setPhoneNum(phoneNum);
 //        List<User> isExist =uMapper.select(tempUser);
@@ -32,6 +32,7 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
             return -2 ;// already exist
         }
         tempUser.setPassword(password);
+        tempUser.setToken(token);
         int uRes = uMapper.insert(tempUser);
         if (uRes == 0){
             return 0; // save user err
@@ -69,5 +70,10 @@ public class UserServiceImpl extends BaseService<User> implements UserService {
         tempUser.setPassword(password);
         User res = uMapper.selectOne(tempUser);
         return res;
+    }
+
+    @Override
+    public void updateToken(User u ){
+        uMapper.updateByPrimaryKeySelective(u);
     }
 }

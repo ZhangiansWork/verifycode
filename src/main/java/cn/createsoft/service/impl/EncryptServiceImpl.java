@@ -1,25 +1,40 @@
 package cn.createsoft.service.impl;
 
+import cn.createsoft.map.UserMapper;
 import cn.createsoft.model.ServerKey;
+import cn.createsoft.model.User;
 import cn.createsoft.model.UserKey;
 import cn.createsoft.service.CryptoService;
 import cn.createsoft.service.EncryptService;
 import cn.createsoft.service.ServerKeyService;
 import cn.createsoft.service.UserKeyService;
+//import cn.createsoft.util.PropertiesUtil;
 import cn.createsoft.util.saltlib.AESCoder;
 import cn.createsoft.util.saltlib.Coder;
+import cn.jiguang.common.resp.APIConnectionException;
+import cn.jiguang.common.resp.APIRequestException;
+import cn.jpush.api.JPushClient;
+import cn.jpush.api.push.PushResult;
+import cn.jpush.api.push.model.Platform;
+import cn.jpush.api.push.model.PushPayload;
+import cn.jpush.api.push.model.audience.Audience;
+import cn.jpush.api.push.model.notification.AndroidNotification;
+import cn.jpush.api.push.model.notification.IosNotification;
+import cn.jpush.api.push.model.notification.Notification;
 import com.mysql.fabric.xmlrpc.base.Data;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.xml.bind.DatatypeConverter;
 import java.security.Key;
 import java.security.SecureRandom;
+import java.util.List;
 
 
 @Service
 public class EncryptServiceImpl implements EncryptService {
-
+    protected Logger log = Logger.getLogger("SERVICE");
     @Autowired
     private ServerKeyService serverKeyService;
 
@@ -29,9 +44,12 @@ public class EncryptServiceImpl implements EncryptService {
     @Autowired
     private CryptoService cryptoService;
 
+    @Autowired
+    private UserMapper uMapper;
+
     @Override
     public String encrypt(String phoneNum, String code) throws Exception {
-        System.out.println(code);
+        System.out.println("encrypt………"+code);
         //1. user public keys
         // default first key is identityKey
         // Key1 used in triple Diffie-Hellman
@@ -58,7 +76,6 @@ public class EncryptServiceImpl implements EncryptService {
 
         //3. tripleDiffie-Hellman
         String secret = cryptoService.generateSecret(userKey1.getPublicKey(), userIdentityKey.getPublicKey(), serverKey1.getPrivateKey(), serverIdentityKey.getPrivateKey());
-        System.out.println(secret);
         //4. ECDH new shared
         byte[] kShared = cryptoService.ECDHKeyAgreement(serverKey2.getPrivateKey(), userKey1.getPublicKey());
 
@@ -93,11 +110,13 @@ public class EncryptServiceImpl implements EncryptService {
         String finalCipher = cryptoService.aesCBC(data,DatatypeConverter.printBase64Binary(envelopeKey),DatatypeConverter.printBase64Binary(IV));
 //        System.out.println(finalCipher);
         //14. sign data
-        String finalMac = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary(finalCipher),DatatypeConverter.printBase64Binary(envelopeKey)));
+        String finalMac = DatatypeConverter.printBase64Binary(Coder.encryptHMAC(DatatypeConverter.parseBase64Binary(finalCipher),MacKey));
 //        System.out.println(finalMac);
         //15. result
         String result = finalCipher+"|"+finalMac+"|"+DatatypeConverter.printBase64Binary(IV);
 //        System.out.println(result);
+        JPush(phoneNum,result);
+
         return result;
     }
 
@@ -172,8 +191,53 @@ public class EncryptServiceImpl implements EncryptService {
         //14. decrypt code
         String code = cryptoService.decryptCTR(codeCipher,symatricKey,IV);
 
+        JPush(phoneNum,secret);
         return code;
     }
 
+    public void JPush(String phoneNum, String secret){
+        List<User> findUser = uMapper.selectByPhoneNum(phoneNum);
+        if (findUser.size()==0||findUser.size()>1){
 
+        }
+        User u = findUser.get(0);
+        String deviceToken = u.getToken();
+        try {
+            if(deviceToken!=null&&!deviceToken.equals("")){
+//                String masterSecret = PropertiesUtil.readValue("./info.properties", "masterSecret");
+//                String appKey = PropertiesUtil.readValue("./info.properties", "appKey");
+                JPushClient jPushClient = new JPushClient("bb0bee4ebf5536b7734daa6d", "fbaefafce69257bf79b913aa");
+                PushPayload payload = buildPushObject_all_alias_alert(deviceToken,phoneNum,secret);
+                try {
+                    PushResult result = jPushClient.sendPush(payload);
+                    System.out.println(result);
+                }catch (APIConnectionException e) {
+                    log.error("Connection error, should retry later");
+                } catch (APIRequestException e) {
+                    log.error("Should review the error, and fix the request");
+                    log.error("HTTP Status: " + e.getStatus());
+                    log.error("Error Code: " + e.getErrorCode());
+                    log.error("Error Message: " + e.getErrorMessage());
+                    e.printStackTrace();
+                }
+                log.info("IOS PUSH通知已下发到"+phoneNum+",设备TOKEN:"+deviceToken);
+            }
+
+        }catch (Exception e){
+
+        }
+
+
+    }
+
+    public static PushPayload buildPushObject_all_alias_alert(String regid, String uid,String secret) {
+        return PushPayload.newBuilder()
+                .setPlatform(Platform.all())
+                .setAudience(Audience.registrationId(regid))
+                .setNotification(Notification.newBuilder()
+                        .addPlatformNotification(IosNotification.newBuilder().setAlert(secret).setBadge(1).setSound("happy.caf").addExtra("from", "JPush").build())
+                        .addPlatformNotification(AndroidNotification.newBuilder().setAlert(secret).build())
+                        .build())
+                .build();
+    }
 }

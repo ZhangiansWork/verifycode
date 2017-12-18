@@ -22,8 +22,11 @@ public class EncryptController {
     public String EncrpytionApi(String phoneNum, String code) throws Exception {
         if (StringUtil.isNotNullorEmpty(phoneNum)&&StringUtil.isNotNullorEmpty(code)){
             String res = encService.encrypt(phoneNum,code);
+
             return "{\"res\":\""+res+"\"}";// push res
         }
+
+
         return "param err";
     }
 }

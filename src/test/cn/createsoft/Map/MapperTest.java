@@ -29,8 +29,14 @@ public class MapperTest {
 //    }
 @Test
     public void Getrandom(){
-        String r = cryptoService.randomNum();
-        System.out.println(r);
+        String r1 = cryptoService.randomNum();
+        String r2 = cryptoService.randomNum();
+        String r3 = cryptoService.randomNum();
+        String r4 = cryptoService.randomNum();
+        System.out.println(r1);
+        System.out.println(r2);
+        System.out.println(r3);
+        System.out.println(r4);
     }
     @Test
     public void splite(){
