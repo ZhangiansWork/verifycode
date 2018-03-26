@@ -21,6 +21,10 @@ public class BankController {
 
     private static ConcurrentHashMap<String,String> map = new ConcurrentHashMap<>();
 
+    /**
+     * @description 银行用户注册
+     * @Param userName 用户名
+     * */
     @RequestMapping("/signUp")
     @ResponseBody
     public String signUp(String userName){
@@ -31,7 +35,13 @@ public class BankController {
         return "{\"res\":\""+"param err"+"\"}";
     }
 
+
+    /**
+     * @description 发送验证码
+     * @Param userName 用户名
+     * */
     @RequestMapping("/send")
+    @ResponseBody
     public String sendCode(String userName){
         if (!StringUtil.isNotNullorEmpty(userName)){
             return "{\"res\":\""+"param err"+"\"}";
@@ -52,6 +62,11 @@ public class BankController {
         return "{\"res\":\""+"ok"+"\"}";
     }
 
+    /**
+     * @description 验证验证码
+     * @Param userName 用户账号
+     * @Param code 验证码
+     * */
     @RequestMapping("/verify")
     @ResponseBody
     public String verify(String userName,String code){

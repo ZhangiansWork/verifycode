@@ -17,6 +17,11 @@ public class EncryptController {
     private EncryptService encService;
 
 
+    /**
+    * @description 加密api
+    * @Param phoneNum 手机号
+    * @Param code 验证码
+    * */
     @RequestMapping(value = "/enc", method = RequestMethod.POST)
     @ResponseBody
     public String EncrpytionApi(String phoneNum, String code) throws Exception {

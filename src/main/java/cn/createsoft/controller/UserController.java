@@ -29,7 +29,13 @@ public class UserController extends BaseController{
 
     @Autowired
     private UserKeyService ukService;
-
+    /**
+     * @description 用户注册
+     * @Param phoneNum 手机号
+     * @Param password 密码
+     * @Param token 验证码
+     *
+     * */
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
     public Object register(String phoneNum, String password, String keys,String token) {
@@ -55,7 +61,12 @@ public class UserController extends BaseController{
         }
         return "param err";
     }
-
+    /**
+     * @description 用户登陆
+     * @Param phoneNum 手机号
+     * @Param password 密码
+     * @Param token 验证码
+     * */
     @RequestMapping(value = "/login",method = RequestMethod.GET)
     public String login(String phoneNum,String password, String token){
         if (StringUtil.isNotNullorEmpty(phoneNum)&&StringUtil.isNotNullorEmpty(password)){
